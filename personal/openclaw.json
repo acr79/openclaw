@@ -58,8 +58,8 @@
               "cacheRead": 0,
               "cacheWrite": 0
             },
-            "contextWindow": 32768,
-            "maxTokens": 8192
+            "contextWindow": 16384,
+            "maxTokens": 512
           },
           {
             "id": "llama3.2:3b",
@@ -74,7 +74,7 @@
               "cacheWrite": 0
             },
             "contextWindow": 131072,
-            "maxTokens": 8192
+            "maxTokens": 512
           }
         ]
       },
@@ -121,11 +121,14 @@
     "defaults": {
       "model": {
         "primary": "google/gemini-2.5-flash",
-        "fallbacks": ["openrouter/meta-llama/llama-3.3-70b-instruct:free", "ollama/llama3.2:3b"]
+        "fallbacks": ["google/gemini-3-pro", "anthropic/claude-sonnet-4-6"]
       },
       "workspace": "~/.openclaw/workspace",
       "compaction": {
-        "mode": "safeguard"
+        "mode": "safeguard",
+        "memoryFlush": {
+          "enabled": false
+        }
       }
     }
   },
@@ -135,12 +138,47 @@
     "restart": true,
     "ownerDisplay": "raw"
   },
+  "acp": {
+    "enabled": true,
+    "dispatch": {
+      "enabled": true
+    },
+    "backend": "acpx",
+    "defaultAgent": "codex",
+    "allowedAgents": ["pi", "claude", "codex", "opencode", "gemini", "kimi"],
+    "maxConcurrentSessions": 8,
+    "stream": {
+      "coalesceIdleMs": 300,
+      "maxChunkChars": 1200
+    },
+    "runtime": {
+      "ttlMinutes": 120
+    }
+  },
+  "session": {
+    "threadBindings": {
+      "enabled": true,
+      "idleHours": 24,
+      "maxAgeHours": 0
+    }
+  },
   "channels": {
     "telegram": {
       "enabled": true,
       "dmPolicy": "pairing",
-      "allowFrom": ["${TELEGRAM_ALLOW_FROM}"],
-      "groupPolicy": "allowlist",
+      "dmHistoryLimit": 6,
+      "allowFrom": ["telegram:8776770321", "telegram:8646697787"],
+      "groupPolicy": "open",
+      "threadBindings": {
+        "enabled": true,
+        "spawnAcpSessions": true
+      },
+      "groups": {
+        "-1003765173845": {
+          "groupPolicy": "open",
+          "requireMention": false
+        }
+      },
       "streaming": "partial"
     }
   },
