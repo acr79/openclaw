@@ -41,8 +41,6 @@ import {
   startAcpSpawnParentStreamRelay,
 } from "./acp-spawn-parent-stream.js";
 import { resolveSandboxRuntimeStatus } from "./sandbox/runtime-status.js";
-import { resolveInternalSessionKey, resolveMainSessionAlias } from "./tools/sessions-helpers.js";
-
 const log = createSubsystemLogger("agents/acp-spawn");
 
 export const ACP_SPAWN_MODES = ["run", "session"] as const;
@@ -166,21 +164,6 @@ function summarizeError(err: unknown): string {
     return err;
   }
   return "error";
-}
-
-function resolveRequesterInternalSessionKey(params: {
-  cfg: OpenClawConfig;
-  requesterSessionKey?: string;
-}): string {
-  const { mainKey, alias } = resolveMainSessionAlias(params.cfg);
-  const requesterSessionKey = params.requesterSessionKey?.trim();
-  return requesterSessionKey
-    ? resolveInternalSessionKey({
-        key: requesterSessionKey,
-        alias,
-        mainKey,
-      })
-    : alias;
 }
 
 async function persistAcpSpawnSessionFileBestEffort(params: {
@@ -307,10 +290,6 @@ export async function spawnAcpDirect(
   ctx: SpawnAcpContext,
 ): Promise<SpawnAcpResult> {
   const cfg = loadConfig();
-  const requesterInternalKey = resolveRequesterInternalSessionKey({
-    cfg,
-    requesterSessionKey: ctx.agentSessionKey,
-  });
   if (!isAcpEnabledByPolicy(cfg)) {
     return {
       status: "forbidden",
@@ -400,7 +379,6 @@ export async function spawnAcpDirect(
       method: "sessions.patch",
       params: {
         key: sessionKey,
-        spawnedBy: requesterInternalKey,
         ...(params.label ? { label: params.label } : {}),
       },
       timeoutMs: 10_000,

@@ -343,8 +343,8 @@ describe("spawnAcpDirect", () => {
       .filter((request) => request.method === "sessions.patch");
     expect(patchCalls[0]?.params).toMatchObject({
       key: result.childSessionKey,
-      spawnedBy: "agent:main:main",
     });
+    expect(patchCalls[0]?.params).not.toHaveProperty("spawnedBy");
     expect(hoisted.sessionBindingBindMock).toHaveBeenCalledWith(
       expect.objectContaining({
         targetKind: "session",

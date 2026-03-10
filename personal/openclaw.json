@@ -138,6 +138,14 @@
     "restart": true,
     "ownerDisplay": "raw"
   },
+  "tools": {
+    "agentToAgent": {
+      "enabled": true
+    },
+    "sessions": {
+      "visibility": "all"
+    }
+  },
   "acp": {
     "enabled": true,
     "dispatch": {
@@ -190,6 +198,16 @@
     "auth": {
       "mode": "token",
       "token": "${GATEWAY_TOKEN}"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "acpx": {
+        "enabled": true,
+        "config": {
+          "permissionMode": "approve-all"
+        }
+      }
     }
   }
 }
