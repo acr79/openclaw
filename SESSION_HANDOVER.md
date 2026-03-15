@@ -1,41 +1,60 @@
-# OpenClaw Session Handover - March 9, 2026
+# OpenClaw Session Handover - March 15, 2026
 
-## Current Status
+## Repo State
 
-- **Repository:** `openclaw`
-- **Branch:** `main` (Clean, up-to-date with origin)
-- **Gateway:** Running via `launchd` (ai.openclaw.gateway).
-- **Primary LLM:** `google/gemini-3-flash` (configured in `~/.openclaw/openclaw.json` and agent `models.json`).
-- **Telegram:** Connected and polling (@Moy_Telegram_18_Bot).
+- Repository: `openclaw`
+- Branch: `main`
+- Local state on March 15, 2026:
+  - working tree is not clean
+  - local branch is ahead of `origin/main` by 5 commits
 
-## Recent Changes & Fixes
+## Current Local Config Snapshot
 
-1.  **Model Migration:**
-    - Updated `~/.openclaw/openclaw.json` to use `gemini-3-flash` as the default model.
-    - Updated `~/.openclaw/agents/main/agent/models.json` to use `gemini-3-flash` to resolve 404 "not found" errors from the older 1.5-flash endpoint.
-2.  **Automated Maintenance:**
-    - **Nightly Security Audit:** Added cron job `b6c2d893` (0 2 \* \* \*) to run `openclaw security audit --deep`.
-    - **Daily Update Check:** Added cron job `93ef33fc` (0 3 \* \* \*) to check for repo updates.
-    - **Auto-Update Policy:** Set `update.auto.enabled: true` in global config (Stable channel).
-3.  **Backup CLI Hardening:**
-    - Verified `openclaw backup create` and `backup verify` commands.
-    - Confirmed that the backup planner correctly identifies and includes external workspaces defined in agent defaults.
+- Repo snapshot config lives in `personal/openclaw.json`.
+- Live runtime config lives in `~/.openclaw/openclaw.json`.
+- Repo snapshot default agent model:
+  - primary: `google/gemini-2.5-flash-lite`
+  - fallbacks: `anthropic/claude-haiku-4-5`, `google/gemini-2.5-flash`
+- Live runtime default agent model:
+  - primary: `google/gemini-2.5-flash-lite`
+  - fallbacks: `anthropic/claude-haiku-4-5`, `google/gemini-3-flash-preview`
+- Main agent model file currently still includes `gemini-3-flash-preview` in `~/.openclaw/agents/main/agent/models.json`.
+- Auto-update remains enabled in config.
 
-## Pending / In-Progress
+## Runtime Notes
 
-- **Backup Command:** The `backup` command is available in the source (`src/commands/backup.ts`) but may not be in the globally installed `openclaw` binary yet. Use `node dist/entry.js backup` for now.
-- **Model IDs:** Some internal files and `dist/` still reference `gemini-3-flash-preview`. The user confirmed `preview` is acceptable as long as it works.
+- Gateway was verified running via `launchd` on March 15, 2026 under `ai.openclaw.gateway`.
+- Cron jobs have changed since the March 9 handover. Do not rely on old job IDs from earlier notes.
+- Telegram and other channel connectivity should be treated as runtime state and rechecked when needed.
+
+## Backup CLI
+
+- The built CLI in this checkout already includes `openclaw backup create` and `openclaw backup verify`.
+- `node dist/entry.js backup` is no longer just a temporary workaround for this repo checkout.
+
+## Cheap Model Recommendation
+
+- Best default low-cost recommendation: `google/gemini-2.5-flash-lite`
+  - current Google docs list it as GA
+  - positioned as Google's smallest and most cost-effective Gemini 2.5 model
+  - free tier exists with published rate limits
+- If you want the absolute cheapest OpenAI option instead: `openai/gpt-4.1-nano`
+  - likely cheaper than most non-Google paid options
+  - tradeoff is lower capability than Flash-Lite for general assistant work
+- Practical recommendation for OpenClaw:
+  - use `google/gemini-2.5-flash-lite` as the cheap primary or first fallback
+  - keep `anthropic/claude-haiku-4-5` or `google/gemini-2.5-flash` as a higher-quality fallback when needed
 
 ## Useful Commands
 
-- **Restart Gateway:** `node dist/entry.js daemon restart`
-- **Check Cron Jobs:** `openclaw cron list`
-- **Verify Config:** `openclaw doctor`
-- **Run Backup (Dry Run):** `node dist/entry.js backup create --dry-run --json`
-- **Build Project:** `npm exec pnpm -- run build`
+- Restart gateway: `node dist/entry.js daemon restart`
+- Check cron jobs: `openclaw cron list`
+- Verify config: `openclaw doctor`
+- Backup dry run: `openclaw backup create --dry-run --json`
+- Build project: `npm exec pnpm -- run build`
 
-## Context Files
+## Workspace Context Files
 
-- `~/.openclaw/workspace/BOOTSTRAP.md` - Initial workspace setup instructions.
-- `~/.openclaw/workspace/IDENTITY.md` - Agent identity (to be completed).
-- `~/.openclaw/workspace/SOUL.md` - Behavioral guidelines.
+- `~/.openclaw/workspace/BOOTSTRAP.md`
+- `~/.openclaw/workspace/IDENTITY.md`
+- `~/.openclaw/workspace/SOUL.md`

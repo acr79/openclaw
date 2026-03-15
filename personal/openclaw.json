@@ -84,6 +84,21 @@
         "api": "google-generative-ai",
         "models": [
           {
+            "id": "gemini-2.5-flash-lite",
+            "name": "Gemini 2.5 Flash-Lite",
+            "api": "google-generative-ai",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 1048576,
+            "maxTokens": 65536
+          },
+          {
             "id": "gemini-2.5-flash",
             "name": "Gemini 2.5 Flash",
             "api": "google-generative-ai",
@@ -224,12 +239,16 @@
       {
         "id": "school-mail",
         "skills": ["gog"]
+      },
+      {
+        "id": "family",
+        "skills": ["gog"]
       }
     ],
     "defaults": {
       "model": {
-        "primary": "anthropic/claude-haiku-4-5",
-        "fallbacks": ["google/gemini-2.5-flash"]
+        "primary": "google/gemini-2.5-flash-lite",
+        "fallbacks": ["anthropic/claude-haiku-4-5", "google/gemini-2.5-flash"]
       },
       "workspace": "~/.openclaw/workspace",
       "sandbox": {
@@ -250,6 +269,16 @@
     "nativeSkills": "auto",
     "restart": true,
     "ownerDisplay": "raw"
+  },
+  "gateway": {
+    "mode": "local",
+    "http": {
+      "endpoints": {
+        "responses": {
+          "enabled": true
+        }
+      }
+    }
   },
   "tools": {
     "agentToAgent": {
@@ -294,8 +323,8 @@
       "enabled": true,
       "dmPolicy": "pairing",
       "dmHistoryLimit": 6,
-      "allowFrom": ["telegram:8776770321", "telegram:8646697787"],
-      "groupAllowFrom": ["telegram:8776770321", "telegram:8646697787"],
+      "allowFrom": ["8776770321", "8646697787"],
+      "groupAllowFrom": ["8776770321", "8646697787"],
       "groupPolicy": "allowlist",
       "threadBindings": {
         "enabled": true,
@@ -303,7 +332,7 @@
       },
       "groups": {
         "-1003765173845": {
-          "allowFrom": ["telegram:8776770321", "telegram:8646697787"],
+          "allowFrom": ["8776770321", "8646697787"],
           "groupPolicy": "allowlist",
           "requireMention": false,
           "tools": {
