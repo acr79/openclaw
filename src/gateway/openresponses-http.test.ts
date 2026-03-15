@@ -482,6 +482,32 @@ describe("OpenResponses HTTP API (e2e)", () => {
       expect(content[0]?.text).toBe("hello");
       await ensureResponseConsumed(resShape);
 
+      mockAgentOnce([{ text: "<think>hidden reasoning</think>FLASH_LITE_OK" }]);
+      const resStripsThinkBlock = await postResponses(port, {
+        stream: false,
+        model: "openclaw",
+        input: "hi",
+      });
+      expect(resStripsThinkBlock.status).toBe(200);
+      const stripsThinkJson = (await resStripsThinkBlock.json()) as Record<string, unknown>;
+      const stripsThinkOutput = stripsThinkJson.output as Array<Record<string, unknown>>;
+      const stripsThinkContent = stripsThinkOutput[0]?.content as Array<Record<string, unknown>>;
+      expect(stripsThinkContent[0]?.text).toBe("FLASH_LITE_OK");
+      await ensureResponseConsumed(resStripsThinkBlock);
+
+      mockAgentOnce([{ text: "<think>hidden reasoning only" }]);
+      const resThinkOnly = await postResponses(port, {
+        stream: false,
+        model: "openclaw",
+        input: "hi",
+      });
+      expect(resThinkOnly.status).toBe(200);
+      const thinkOnlyJson = (await resThinkOnly.json()) as Record<string, unknown>;
+      const thinkOnlyOutput = thinkOnlyJson.output as Array<Record<string, unknown>>;
+      const thinkOnlyContent = thinkOnlyOutput[0]?.content as Array<Record<string, unknown>>;
+      expect(thinkOnlyContent[0]?.text).toBe("No response from OpenClaw.");
+      await ensureResponseConsumed(resThinkOnly);
+
       const resNoUser = await postResponses(port, {
         model: "openclaw",
         input: [{ type: "message", role: "system", content: "yo" }],

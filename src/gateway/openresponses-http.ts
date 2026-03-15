@@ -57,6 +57,8 @@ type OpenResponsesHttpOptions = {
 
 const DEFAULT_BODY_BYTES = 20 * 1024 * 1024;
 const DEFAULT_MAX_URL_PARTS = 8;
+const LEADING_THINK_BLOCK_RE =
+  /^\s*<\s*(?:think(?:ing)?|thought|antthinking)\b[^>]*>[\s\S]*?(?:<\s*\/\s*(?:think(?:ing)?|thought|antthinking)\s*>|$)\s*/i;
 
 function writeSseEvent(res: ServerResponse, event: StreamingEvent) {
   res.write(`event: ${event.type}\n`);
@@ -229,6 +231,17 @@ function createAssistantOutputItem(params: {
     content: [{ type: "output_text", text: params.text }],
     status: params.status,
   };
+}
+
+function stripLeadingThinkingPreamble(text: string): string {
+  let next = text;
+  while (true) {
+    const stripped = next.replace(LEADING_THINK_BLOCK_RE, "");
+    if (stripped === next) {
+      return stripped.trim();
+    }
+    next = stripped;
+  }
 }
 
 async function runResponsesAgentCommand(params: {
@@ -513,10 +526,12 @@ export async function handleOpenResponsesHttpRequest(
 
       const content =
         Array.isArray(payloads) && payloads.length > 0
-          ? payloads
-              .map((p) => (typeof p.text === "string" ? p.text : ""))
-              .filter(Boolean)
-              .join("\n\n")
+          ? stripLeadingThinkingPreamble(
+              payloads
+                .map((p) => (typeof p.text === "string" ? p.text : ""))
+                .filter(Boolean)
+                .join("\n\n"),
+            )
           : "No response from OpenClaw.";
 
       const response = createResponseResource({
@@ -684,7 +699,8 @@ export async function handleOpenResponsesHttpRequest(
     if (evt.stream === "lifecycle") {
       const phase = evt.data?.phase;
       if (phase === "end" || phase === "error") {
-        const finalText = accumulatedText || "No response from OpenClaw.";
+        const finalText =
+          stripLeadingThinkingPreamble(accumulatedText) || "No response from OpenClaw.";
         const finalStatus = phase === "error" ? "failed" : "completed";
         requestFinalize(finalStatus, finalText);
       }
@@ -791,10 +807,12 @@ export async function handleOpenResponsesHttpRequest(
 
         const content =
           Array.isArray(payloads) && payloads.length > 0
-            ? payloads
-                .map((p) => (typeof p.text === "string" ? p.text : ""))
-                .filter(Boolean)
-                .join("\n\n")
+            ? stripLeadingThinkingPreamble(
+                payloads
+                  .map((p) => (typeof p.text === "string" ? p.text : ""))
+                  .filter(Boolean)
+                  .join("\n\n"),
+              )
             : "No response from OpenClaw.";
 
         accumulatedText = content;

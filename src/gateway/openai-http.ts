@@ -393,15 +393,31 @@ function coerceRequest(val: unknown): OpenAiChatCompletionRequest {
   return val as OpenAiChatCompletionRequest;
 }
 
+const LEADING_THINK_BLOCK_RE =
+  /^\s*<\s*(?:think(?:ing)?|thought|antthinking)\b[^>]*>[\s\S]*?(?:<\s*\/\s*(?:think(?:ing)?|thought|antthinking)\s*>|$)\s*/i;
+
+function stripLeadingThinkingPreamble(text: string): string {
+  let next = text;
+  while (true) {
+    const stripped = next.replace(LEADING_THINK_BLOCK_RE, "");
+    if (stripped === next) {
+      return stripped.trim();
+    }
+    next = stripped;
+  }
+}
+
 function resolveAgentResponseText(result: unknown): string {
   const payloads = (result as { payloads?: Array<{ text?: string }> } | null)?.payloads;
   if (!Array.isArray(payloads) || payloads.length === 0) {
     return "No response from OpenClaw.";
   }
-  const content = payloads
-    .map((p) => (typeof p.text === "string" ? p.text : ""))
-    .filter(Boolean)
-    .join("\n\n");
+  const content = stripLeadingThinkingPreamble(
+    payloads
+      .map((p) => (typeof p.text === "string" ? p.text : ""))
+      .filter(Boolean)
+      .join("\n\n"),
+  );
   return content || "No response from OpenClaw.";
 }
 

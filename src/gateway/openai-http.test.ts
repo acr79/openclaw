@@ -229,6 +229,32 @@ describe("OpenAI-compatible HTTP API (e2e)", () => {
       }
 
       {
+        mockAgentOnce([{ text: "<think>hidden reasoning</think>FLASH_LITE_OK" }]);
+        const res = await postChatCompletions(port, {
+          model: "openclaw",
+          messages: [{ role: "user", content: "hi" }],
+        });
+        expect(res.status).toBe(200);
+        const json = (await res.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        expect(json.choices?.[0]?.message?.content).toBe("FLASH_LITE_OK");
+      }
+
+      {
+        mockAgentOnce([{ text: "<think>hidden reasoning only" }]);
+        const res = await postChatCompletions(port, {
+          model: "openclaw",
+          messages: [{ role: "user", content: "hi" }],
+        });
+        expect(res.status).toBe(200);
+        const json = (await res.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        expect(json.choices?.[0]?.message?.content).toBe("No response from OpenClaw.");
+      }
+
+      {
         mockAgentOnce([{ text: "hello" }]);
         const res = await postChatCompletions(port, {
           user: "alice",
